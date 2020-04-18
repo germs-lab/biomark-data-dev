@@ -1,11 +1,11 @@
 
-#Usage: python biomark_count.py [input file] [# of samples] [# of genes] [# of replicates per gene] > [name of output file]
+#Usage: python biomark_count.py [input file] > [name of output file]
 #Make sure the same primers are grouped within the column before running script
 
 # Written for  274 samples x 92 Genes - Phil April 2020
 
 #Example of input
-
+#adina.csv
 
 import sys
 

@@ -1,5 +1,5 @@
 
-#Usage: python biomark_count.py [input file] > [name of output file]
+#Usage: python biomark_count2.py [input file] > [name of output file]
 #Make sure the same primers are grouped within the column before running script
 
 # Written for  274 samples x 92 Genes - Phil April 2020

@@ -18,7 +18,7 @@ meta_data_file = "metadata.csv"
 meta <- read.csv(meta_data_file, header=TRUE)
 
 # Check the NTCs
-ct_threshold_ntc = 20
+ct_threshold_ntc = 20 #Should be set by you
 ntc <- subset(raw_data, Name == "NTC")
 summary(ntc$Value)
 check_ntc <- subset(ntc, Value > 20 & Value < 999)
@@ -90,7 +90,7 @@ for (x in 1:length(gene_list)) {
   p = ggplot(f2, aes_string(x="plot", y="MEAN2", color="Name.1"))
   p = p + geom_point() + geom_errorbar(position=position_dodge(), limits)+theme(axis.text.x = element_text(angle = 90)) 
   p
-  write.csv(file=paste0(x,".sample.csv"), each_gene, quote=FALSE, row.names=FALSE)
+  write.csv(file=paste0(x,".byplot.csv"), each_gene, quote=FALSE, row.names=FALSE)
   ggsave(paste0(x,'byplot.pdf'), device="pdf")
 }
 
@@ -98,11 +98,11 @@ each_gene <- subset(f, Name.1 == gene_list[x])
 
 #EVERYTHING!
 #Note this is going to take the average of the averages, not sure if this is to be done
-f_plot <-ddply(f, .(plot, Name.1), summarise, MEAN2 = mean(MEAN), SE=sd(MEAN)/sqrt(length(MEAN)))
+f_plot <-ddply(f, .(plot, Name.1), summarise, MEAN2 = mean(MEAN), SE2=sd(MEAN)/sqrt(length(MEAN)))
 f2 <- subset(f_plot, MEAN2 < 25) #Can set as appropriate - filter by MEAN technical rep Ct
-limits<-aes(ymin=MEAN2-SE, ymax=MEAN2+SE)
+limits2<-aes(ymin=MEAN2-SE2, ymax=MEAN2+SE2)
 p = ggplot(f2, aes_string(x="plot", y="MEAN2", color="Name.1"))
-p = p + geom_point() + geom_errorbar(position=position_dodge(), limits)+theme(axis.text.x = element_text(angle = 90)) 
-p
+p + geom_point() + geom_errorbar(width=0.25, limits2)+theme(axis.text.x = element_text(angle = 90)) 
+
 
   

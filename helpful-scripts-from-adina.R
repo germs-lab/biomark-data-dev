@@ -39,7 +39,7 @@ for (x in 1:length(gene_list)) {
   each_gene_filtered = subset(each_gene, full_assay == standard_only)
   #print(each_gene_filtered)
   each_gene_badfiltered = subset(each_gene, full_assay != standard_only)
-  each_gene_badfiltered = subset(each_gene_badfiltered, Value < 999)
+  each_gene_badfiltered = subset(each_gene_badfiltered, Value < 999) # This can be used to filter
   #print(each_gene_badfiltered)
   f <- ddply(each_gene_filtered, .(rConc, full_assay), summarise, MEAN = mean(Value), SE=sd(Value)/sqrt(length(Value)))
   limits<-aes(ymin=MEAN-SE, ymax=MEAN+SE)
@@ -57,3 +57,52 @@ for (x in 1:length(gene_list)) {
   ggsave(paste0(x,'nonstandard.pdf'), device="pdf")
          
 }
+
+#Samples Workflow
+
+samples <- subset(merged, sample_type == "env") #all samples
+#average across technical replicates
+f <- ddply(samples, .(full_assay, location, plot, time, matrix, Name, Name.1), summarise, MEAN = mean(Value), SE=sd(Value)/sqrt(length(Value)))
+#genes that are detected #stats are done prior to removing bad measurements
+f_detects <- subset(f, MEAN < 999)
+print("Number of Genes with detects:  ")
+length(unique(f_detects$Name.1))
+unique(f_detects$Name.1)
+#Analysis likely useful by gene or by sample
+gene_list <- unique(f$Name.1)
+for (x in 1:length(gene_list)) {
+  each_gene <- subset(f, Name.1 == gene_list[x])
+  limits<-aes(ymin=MEAN-SE, ymax=MEAN+SE)
+  f2 <- subset(each_gene, MEAN < 25) #Can set as appropriate - filter by MEAN technical rep Ct
+  p = ggplot(f2, aes_string(x="full_assay", y="MEAN", color="matrix"))
+  p = p + geom_point() + geom_errorbar(position=position_dodge(), limits)+theme(axis.text.x = element_text(angle = 90)) 
+  p
+  write.csv(file=paste0(x,".sample.csv"), each_gene, quote=FALSE, row.names=FALSE)
+  ggsave(paste0(x,'sample.pdf'), device="pdf")
+}
+for (x in 1:length(gene_list)) {
+  each_gene <- subset(f, Name.1 == gene_list[x])
+
+  #Note this is going to take the average of the averages, not sure if this is to be done
+  f_plot <-ddply(each_gene, .(plot, Name.1), summarise, MEAN2 = mean(MEAN), SE=sd(MEAN)/sqrt(length(MEAN)))
+  f2 <- subset(f_plot, MEAN2 < 25) #Can set as appropriate - filter by MEAN technical rep Ct
+  limits<-aes(ymin=MEAN2-SE, ymax=MEAN2+SE)
+  p = ggplot(f2, aes_string(x="plot", y="MEAN2", color="Name.1"))
+  p = p + geom_point() + geom_errorbar(position=position_dodge(), limits)+theme(axis.text.x = element_text(angle = 90)) 
+  p
+  write.csv(file=paste0(x,".sample.csv"), each_gene, quote=FALSE, row.names=FALSE)
+  ggsave(paste0(x,'byplot.pdf'), device="pdf")
+}
+
+each_gene <- subset(f, Name.1 == gene_list[x])
+
+#EVERYTHING!
+#Note this is going to take the average of the averages, not sure if this is to be done
+f_plot <-ddply(f, .(plot, Name.1), summarise, MEAN2 = mean(MEAN), SE=sd(MEAN)/sqrt(length(MEAN)))
+f2 <- subset(f_plot, MEAN2 < 25) #Can set as appropriate - filter by MEAN technical rep Ct
+limits<-aes(ymin=MEAN2-SE, ymax=MEAN2+SE)
+p = ggplot(f2, aes_string(x="plot", y="MEAN2", color="Name.1"))
+p = p + geom_point() + geom_errorbar(position=position_dodge(), limits)+theme(axis.text.x = element_text(angle = 90)) 
+p
+
+  
